@@ -1,0 +1,154 @@
+{
+  "project_info": {
+    "project_number": "118575250680",
+    "firebase_url": "https://caritas-rig-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "caritas-rig",
+    "storage_bucket": "caritas-rig.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118575250680:android:563119a3cf9bd987b30f0d",
+        "android_client_info": {
+          "package_name": "com.GregorKobel.iot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXXNvG1zY5hyjllvZQ3XypAbwFH7YZhXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118575250680:android:2b07110fc498b92ab30f0d",
+        "android_client_info": {
+          "package_name": "com.IoT.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXXNvG1zY5hyjllvZQ3XypAbwFH7YZhXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118575250680:android:c8892195bfa994cdb30f0d",
+        "android_client_info": {
+          "package_name": "com.superbgoal.caritasrig"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118575250680-5i780i5fg5hr6vqbvkfl3vu0mlkfr8j0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "eb696bfaae84993d3c6c2b3011e2a497e069fac9"
+          }
+        },
+        {
+          "client_id": "118575250680-d2rshfnh8pd73kqftjvnfpodpoggfk7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "cd60e02177d7c2df429fe42af4c5e2a944923e72"
+          }
+        },
+        {
+          "client_id": "118575250680-giqvvjhse2qdljjqoaknv6cpthb73673.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "7494a438f6a2cb4d1538e8b6b41ca716f95ea729"
+          }
+        },
+        {
+          "client_id": "118575250680-kovbl075mm6u7qtg3o2imgq6rlcnlk68.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "9bd0beffe88095dac22ff2aed835078ea9b9df58"
+          }
+        },
+        {
+          "client_id": "118575250680-mccc1opepnchvnjsprkf8vho9gicomda.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "4047e5b1142ed85eda81218358f92ab1a5386355"
+          }
+        },
+        {
+          "client_id": "118575250680-mvs6k8h3a94m0avbq6ibmstmj0rajvtl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "df49fc8d90dec2ccaab0b8ade603f9252ec68a0d"
+          }
+        },
+        {
+          "client_id": "118575250680-n2hjhllnia6223rvovk81h08hgsh3m89.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superbgoal.caritasrig",
+            "certificate_hash": "dae221283f7f27d3fe73167a85d13613564224b7"
+          }
+        },
+        {
+          "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXXNvG1zY5hyjllvZQ3XypAbwFH7YZhXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118575250680-olelq7aore65vn355fei6k95p03rr0th.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
