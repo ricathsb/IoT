@@ -3,6 +3,8 @@ package com.GregorKobel.iot
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,13 +20,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,6 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.GregorKobel.iot.ui.theme.IoTTheme
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
@@ -43,15 +51,14 @@ import kotlinx.coroutines.tasks.await
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Initialize Firebase App
-        val database : DatabaseReference = Firebase.database.reference
+        val database: DatabaseReference = Firebase.database.reference
+//        Firebase.database.setPersistenceEnabled(false)
         enableEdgeToEdge()
 
-        // Set the content for the app
         setContent {
             IoTTheme {
                 val context = applicationContext
-                ResiInputScreen(context,database)
+                ResiInputScreen(context, database)
             }
         }
     }
@@ -66,58 +73,45 @@ fun ResiInputScreen(context: Context, database: DatabaseReference) {
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(1000)
+            delay(2000)
 
             try {
-                val resiSnapshot = database.child("resi").get().await()
-                val scannedSnapshot = database.child("scanned_codes").get().await()
+                val snapshot = database.child("resi").get().await()
+                val tempList = mutableListOf<ResiStatus>()
 
-                val resiList = mutableListOf<ResiStatus>()
-                val scannedList = scannedSnapshot.children.mapNotNull {
-                    it.child("data").getValue(String::class.java)
-                }
-
-                for (child in resiSnapshot.children) {
-                    val key = child.key ?: continue
+                for (child in snapshot.children) {
                     val number = child.child("number").getValue(String::class.java) ?: continue
                     val scanned = child.child("scanned").getValue(Boolean::class.java) ?: false
+                    val alreadyNotified = child.child("alreadyNotified").getValue(Boolean::class.java) ?: false
 
-                    // Jika belum ditandai scanned, dan ada di scanned_codes → tandai
-                    if (!scanned && scannedList.contains(number)) {
-                        database.child("resi").child(key).child("scanned").setValue(true).await()
+                    val photoUrls = child.child("photoUrl").children.mapNotNull {
+                        it.getValue(String::class.java)
+                    }
 
+                    Log.d("ResiDebug", "number=$number, scanned=$scanned, alreadyNotified=$alreadyNotified")
+
+                    if (scanned && !alreadyNotified) {
                         showNotification(
-                            context.applicationContext,
-                            "Resi ditemukan",
+                            context,
+                            "Resi Terverifikasi",
                             "Nomor resi $number berhasil dipindai."
                         )
 
+                        Log.d("ResiDebug", "✅ Notifikasi ditampilkan untuk resi: $number")
+                        child.ref.child("alreadyNotified").setValue(true)
+
+                        statusMessage = "📦 Nomor resi $number berhasil dipindai."
                         isResiFound = true
-                        statusMessage = "Nomor resi $number berhasil dipindai."
-
-                        try {
-                            database.child("solenoid-lock").child("unlock").setValue(true).await()
-                            Log.d("Firebase", "🔓 Solenoid di-unlock selama 20 detik")
-                        } catch (e: Exception) {
-                            Log.e("FirebaseError", "Gagal mengubah nilai unlock: ${e.message}")
-                        }
-
-                        delay(20_000)
-
-                        database.child("solenoid-lock").child("unlock").setValue(false).await()
-                        Log.d("Firebase", "🔒 Solenoid di-lock kembali")
-
-                        isResiFound = false
-                        statusMessage = ""
                     }
 
-                    resiList.add(ResiStatus(number, scanned))
+                    tempList.add(ResiStatus(number, scanned, photoUrls))
                 }
 
-                resiStatusList = resiList
+                resiStatusList = tempList
 
             } catch (e: Exception) {
-                Log.e("Firebase", "❌ Gagal mengecek resi: ${e.message}")
+                statusMessage = "❌ Gagal memuat data: ${e.message}"
+                Log.e("ResiDebug", "Gagal memuat data", e)
             }
         }
     }
@@ -130,7 +124,9 @@ fun ResiInputScreen(context: Context, database: DatabaseReference) {
             statusMessage = ""
         },
         onSubmit = {
-            submitResi(database, resi,
+            submitResi(
+                database,
+                resi,
                 onSuccess = {
                     statusMessage = "✅ Nomor resi berhasil disimpan."
                 },
@@ -138,15 +134,18 @@ fun ResiInputScreen(context: Context, database: DatabaseReference) {
                     statusMessage = "❌ Gagal menyimpan resi: ${e.message}"
                 },
                 onEmpty = {
-                    statusMessage = "⚠️ Nomor resi kosong, silakan masukkan nomor resi."
+                    statusMessage = "⚠️ Nomor resi kosong."
                 }
             )
         },
         statusMessage = statusMessage,
         isResiFound = isResiFound,
-        resiStatusList = resiStatusList
+        resiStatusList = resiStatusList,
+        context = context
     )
 }
+
+
 
 @Composable
 fun ResiInputUI(
@@ -155,8 +154,12 @@ fun ResiInputUI(
     onSubmit: () -> Unit,
     statusMessage: String,
     isResiFound: Boolean,
-    resiStatusList: List<ResiStatus>
+    resiStatusList: List<ResiStatus>,
+    context: Context
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedPhotos by remember { mutableStateOf<List<String>>(emptyList()) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -184,32 +187,83 @@ fun ResiInputUI(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("📦 Daftar Resi:", style = MaterialTheme.typography.titleMedium)
-
+        Text("📋 Daftar Resi:", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
             items(resiStatusList) { item ->
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(vertical = 4.dp)
                 ) {
-                    Text(text = item.resi)
-                    Text(
-                        text = if (item.isScanned) "✅ Sudah discan" else "⏳ Belum discan",
-                        color = if (item.isScanned) Color.Green else Color.Gray
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = item.resi)
+                        Text(
+                            text = if (item.isScanned) "✅ Sudah discan" else "⏳ Belum discan",
+                            color = if (item.isScanned) Color.Green else Color.Gray
+                        )
+                    }
+
+                    if (item.photoUrls.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                selectedPhotos = item.photoUrls
+                                showDialog = true
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Lihat Foto")
+                        }
+                    }
                 }
             }
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Tutup")
+                    }
+                },
+                title = { Text("Foto Resi") },
+                text = {
+                    LazyColumn(modifier = Modifier.height(400.dp)) {
+                        items(selectedPhotos) { url ->
+                            Log.d("PhotoURLDebug", "Menampilkan foto dari URL: $url") // DEBUG LOG DI SINI
+
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(url)
+                                    .memoryCachePolicy(CachePolicy.DISABLED)  // Nonaktifkan cache memory
+                                    .diskCachePolicy(CachePolicy.DISABLED)    // Nonaktifkan cache disk
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 }
 
+
+
+
 data class ResiStatus(
     val resi: String,
-    val isScanned: Boolean
+    val isScanned: Boolean,
+    val photoUrls: List<String> = emptyList()
 )
 
 fun submitResi(
